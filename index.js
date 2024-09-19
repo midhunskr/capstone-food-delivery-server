@@ -13,8 +13,6 @@ app.use(cors({
   // origin: ['https://chewse-food-delivery.vercel.app', 'http://localhost:5173'],
   origin: true,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
 // app.options('*', cors()); // This will respond to preflight requests
@@ -27,11 +25,11 @@ app.use(cors({
 //   next();
 // });
 
-
-//Parsing incoming JSON requests and puts the parsed data in req.body 
-app.use(express.json())
 //Parsing incoming cookie
 app.use(cookieParser())
+//Parsing incoming JSON requests and puts the parsed data in req.body 
+app.use(express.json())
+
 
 //Import PORT from 'env'
 const port = process.env.PORT
