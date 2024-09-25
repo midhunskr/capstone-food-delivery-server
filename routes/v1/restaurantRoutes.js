@@ -1,6 +1,6 @@
 import express from 'express'
 import { admin, authUser } from '../../middlewares/authMiddleware.js'
-import { createRestaurant, deleteRestaurant, getRestaurant, getRestaurantById, getRestaurantByMenuItem, updateRestaurant } from '../../controllers/restaurantController.js'
+import { createRestaurant, deleteRestaurant, getRestaurant, getRestaurantById, getRestaurantByMenuItem, searchRestaurant, updateRestaurant } from '../../controllers/restaurantController.js'
 import { upload } from '../../middlewares/uploadMiddleware.js'
 
 const router = express.Router()
@@ -16,5 +16,7 @@ router.get('/:id', authUser, getRestaurantById)
 router.get('/', authUser, getRestaurantByMenuItem)
 router.put('/:id', authUser, admin, updateRestaurant)
 router.delete('/:id', authUser, admin, deleteRestaurant)
+router.get('/searchrestaurants', authUser, searchRestaurant)
+
 
 export default router

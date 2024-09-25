@@ -151,14 +151,13 @@ export const checkUser = async (req, res, next) => {
         const user = req.user
         // const userName = userData.name
         
-    
         //Error handling
         if(!user) {
             return res.status(400).json({success: false, messaage:'authUser failed, user not authenticated'})
         }
 
         //Sucess response
-        res.json({success: true, message: "User verified successfully!"})
+        res.json({success: true, role: user.role, message: "User verified successfully!"})
 
     } catch (error) {
         res.status(error.status || 500).json({message: error.messaage || 'Internal server error'})
