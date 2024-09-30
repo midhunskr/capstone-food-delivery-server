@@ -16,7 +16,7 @@ router.get('/:id', authUser, getRestaurantById)
 router.get('/', authUser, getRestaurantByMenuItem)
 router.put('/:id', authUser, admin, updateRestaurant)
 router.delete('/:id', authUser, admin, deleteRestaurant)
-router.get('/searchrestaurants', authUser, searchRestaurant)
+router.get('/search/:id', authUser, searchRestaurant)
 
 
 export default router

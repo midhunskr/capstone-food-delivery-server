@@ -186,13 +186,14 @@ export const deleteRestaurant = async (req, res) => {
 export const searchRestaurant = async (req, res) => {
   const { query } = req.query;
 
-  console.log(query);
-  
-
   try {
     const results = await Restaurant.find({
-      name: { $regex: query, $options: 'i' } // Case-insensitive search for item name
-    });
+      $or: [
+          { name: { $regex: query, $options: 'i' } },  // Match restaurant name
+          { 'menuItems.name': { $regex: query, $options: 'i' } }  // Match menu item name
+      ]
+  }).populate('menuItems');
+    
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: 'Something went wrong' });

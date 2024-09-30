@@ -13,7 +13,7 @@ export const createPayment = async (req, res) => {
     });
 
     const options = {
-      amount: grandTotal * 100, // Amount in paise
+      amount: Math.round(grandTotal * 100), // Amount in paise
       currency: "INR",
       receipt: `receipt_order_${Date.now()}`,
     };
@@ -41,7 +41,7 @@ export const createPayment = async (req, res) => {
     res.status(200).json({ orderId: order.id })
   } catch (error) {
     console.error("Error creating Razorpay order:", error)
-    res.status(500).json({ error: "Something went wrong" })
+    res.status(500).json({  error })
   }
 }
 
