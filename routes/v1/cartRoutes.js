@@ -6,6 +6,6 @@ const router = express.Router()
 
 router.route('/update').post(authUser, updateCart)
 router.route('/').get(authUser, getCart)
-router.route('/clear').delete(authUser, clearCart)
+router.route('/clear').post(authUser, clearCart)
 
 export default router
