@@ -8,9 +8,9 @@ export const createRestaurant = async (req, res) => {
       const { name, description, location } = req.body;
   
       const menuItemKeys = Object.keys(req.body).filter(key => key.startsWith('menuItems'));
-      const menuItemIndices = [...new Set(menuItemKeys.map(key => key.match(/\[(\d+)\]/)[1]))];
+      const menuItemIndices = [...new Set(menuItemKeys.map(key => key.match(/\[(\d+)\]/)[1]))];   
 
-        const menuItems = await Promise.all(menuItemIndices.map(async (index) => {
+      const menuItems = await Promise.all(menuItemIndices.map(async (index) => {
         const itemName = req.body[`menuItems[${index}].name`];
         const itemPrice = parseFloat(req.body[`menuItems[${index}].price`]); // Convert to Number
         const itemDescription = req.body[`menuItems[${index}].description`];
@@ -31,7 +31,7 @@ export const createRestaurant = async (req, res) => {
             throw new Error(`Image upload failed for ${itemName}`);
           }
         }
-           
+          
         return {
           name: itemName,
           price: itemPrice,

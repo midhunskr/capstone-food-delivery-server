@@ -22,10 +22,9 @@ const cartSchema = new mongoose.Schema({
     id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Restaurant",
-      required: true
     },
-    name: { type: String, required: true },
-    location: { type: String, required: true }
+    name: { type: String },
+    location: { type: String }
   },
   cartItems: [cartItemSchema],
   totalPrice: { type: Number, required: true, default: 0 },
