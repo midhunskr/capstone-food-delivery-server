@@ -108,6 +108,53 @@ export const userProfile = async (req, res) => {
     }
 }
 
+//Update user
+export const updateUser = async (req, res) => {
+    try {
+      const userId = req.user.id; // Assuming req.user contains authenticated user data
+      console.log(userId);
+      
+  
+      // Extract name and email from the request body
+      const { name, email } = req.body;
+  
+      // Validate the input data (add more validations if necessary)
+    //   if (!name || !email) {
+    //     return res.status(400).json({ error: "Name and email are required" });
+    //   }
+  
+      // Check if the email is already in use by another user
+      const existingUser = await User.findOne({email});
+      if (existingUser) {
+        return res.status(400).json({ error: "Email is already in use by another account" });
+      }
+  
+      // Update the user in the database
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { name, email },
+        { new: true, runValidators: true } // Return the updated user object and run validations
+      );
+  
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      // Respond with the updated user data
+      res.status(200).json({
+        success: true,
+        message: "User updated successfully",
+        user: {
+          name: updatedUser.name,
+          email: updatedUser.email,
+        },
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  };
+
 //Get all users
 export const getAllUsers = async (req, res) => {
     try {
@@ -174,5 +221,111 @@ export const logoutUser = async (req, res) => {
         res.status(200).json({ success: true, message: "User logged out successfully!" });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+//Add address
+export const addAddress = async (req, res) => {
+    try {
+        const { street, city, zip, state, country, isDefault } = req.body;
+        console.log('Request body:', req.body); // Log the request body
+
+        // Find the user by ID
+        const userId = req.user.id; // Ensure you have the user's ID from the request
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Create a new address
+        const newAddress = {
+            street,
+            city,
+            zip,
+            state,
+            country,
+            isDefault: isDefault || false,
+        };
+
+        // Push the new address into the user's addresses array
+        user.addresses.push(newAddress);
+
+        // Save the user with the new address
+        const updatedUser = await user.save();
+
+        // Return the updated user or the new address
+        res.status(201).json(updatedUser); // You can also return only the new address if needed
+    } catch (error) {
+        console.error('Error saving address:', error); // Log the error for debugging
+        res.status(500).json({ message: 'Error saving address', error: error.message });
+    }
+};
+
+
+//Get all address
+export const getUserAddresses = async (req, res) => {
+    try {
+        const userId = req.user.id; // Ensure the user ID is correctly fetched
+        const user = await User.findById(userId).select('addresses'); // Only select addresses
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json(user.addresses); // Return only the addresses
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching addresses', error });
+    }
+};
+
+//Update address
+export const updateAddress = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        // Find the user and the address to update
+        const user = await User.findOne({ _id: userId, 'addresses._id': id });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User or address not found' });
+        }
+
+        // Find the address index
+        const addressIndex = user.addresses.findIndex(address => address._id.toString() === id);
+
+        // Update the address
+        user.addresses[addressIndex] = { ...user.addresses[addressIndex]._doc, ...req.body };
+        
+        // Save the user with updated addresses
+        const updatedUser = await user.save();
+        res.status(200).json(updatedUser.addresses[addressIndex]); // Return the updated address
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating address', error });
+    }
+};
+
+//Delete address
+export const deleteAddress = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        // Find the user
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Filter out the address to delete
+        user.addresses = user.addresses.filter(address => address._id.toString() !== id);
+        
+        // Save the user with updated addresses
+        await user.save();
+        res.status(200).json({ message: 'Address deleted' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting address', error });
     }
 };

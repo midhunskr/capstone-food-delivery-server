@@ -45,11 +45,15 @@ export const createPayment = async (req, res) => {
   }
 }
 
-// Assuming you're using Mongoose for your models
-
 export const getUserOrders = async (req, res) => {
   try {
-    const userId = req.user._id // Assuming you're getting the user ID from the authenticated request
+    const userId = req.user.id //User ID from the authenticated request
+    // const userRole = req.user.role;
+    
+    // // Only allow users with role 'user' to fetch their own orders
+    // if (userRole !== 'user') {
+    //   return res.status(403).json({ message: "Access denied. Only regular users can view orders." });
+    // }
 
     // Extract page and limit from query parameters, with default values
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
@@ -74,9 +78,6 @@ export const getUserOrders = async (req, res) => {
     if (!totalOrders || totalOrders.length === 0) {
       return res.status(404).json({ message: "No orders found for this user." });
     }
-
-    console.log(orders);
-    
     
     // Return orders with pagination details
     res.status(200).json({
