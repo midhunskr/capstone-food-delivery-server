@@ -5,8 +5,8 @@ import { Restaurant } from "../models/restaurantModel.js";
 export const updateCart = async (req, res) => {
   try {
     const { menuItems, restaurantId } = req.body;
-    const userId = req.user.id;
-
+    const userId = req.user.id; 
+    
     // Check if the restaurant exists
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) {
@@ -29,14 +29,17 @@ export const updateCart = async (req, res) => {
 
     // Create an array to hold the updates (valid items only)
     const updates = validMenuItems.map(item => {
-      const menuItem = restaurant.menuItems.find(m => m._id.equals(item.menuItemId));
+      const menuItem = restaurant.menuItems.find(m => m._id.equals(item.menuItemId));   
+      
       if (!menuItem) {
         throw new Error(`Menu item with ID ${item.menuItemId} not found in restaurant ${restaurant.name}.`);
       }
       return {
         menuItem: menuItem._id,
         name: menuItem.name,
+        veg: menuItem.veg,
         price: menuItem.price,
+        image: menuItem.image,
         quantity: item.quantity,
         total: menuItem.price * item.quantity
       };
@@ -79,18 +82,23 @@ export const updateCart = async (req, res) => {
   }
 };
 
-
 export const getCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user.id })
-      // .populate("cartItems", "name price image")
-      // .populate("restaurant.id", "name location");
-      .populate("user", "name, email" )
+    const { restaurantId } = req.query; // Assuming restaurantId is passed as a query parameter
+
+    if (!restaurantId) {
+      return res.status(400).json({ success: false, message: "Restaurant ID is required." });
+    }
+
+    const cart = await Cart.findOne({ user: req.user.id, "restaurant.id": restaurantId })
+      .populate("user", "name email")
+      // Add other populate options here as needed
+      .populate("cartItems", "name price image");
 
     if (!cart) {
-      return res.status(404).json({ success: false, message: "Cart not found" });
+      return res.status(404).json({ success: false, message: "Cart not found for this restaurant." });
     }
-    
+
     res.status(200).json({
       success: true,
       cart
@@ -100,6 +108,7 @@ export const getCart = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error, failed to fetch cart." });
   }
 };
+
 
 // Clear cart
 export const clearCart = async (req, res) => {

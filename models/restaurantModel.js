@@ -8,7 +8,8 @@ const menuItemSchema = new mongoose.Schema({
     veg: { type: Boolean, default: true },
     recommended: { type: Boolean, default: true },
     category: { type: String },     
-    image: { type: String },
+    image1: { type: String },
+    image2: { type: String },
     restaurantName: {type: String},
     restaurantLocation: {type: String},
 });

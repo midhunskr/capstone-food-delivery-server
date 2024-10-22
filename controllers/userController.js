@@ -71,7 +71,6 @@ export const loginUser = async (req, res) => {
             secure: true,
             sameSite: 'None',
             path: '/',
-            maxAge: 24 * 60 * 60 * 1000,
           })
 
         //Success response
@@ -220,7 +219,6 @@ export const logoutUser = async (req, res) => {
             secure: true,
             sameSite: 'None',
             path: '/',
-            maxAge: 24 * 60 * 60 * 1000,
         });
         
         // Success response
@@ -234,7 +232,6 @@ export const logoutUser = async (req, res) => {
 export const addAddress = async (req, res) => {
     try {
         const { street, city, zip, state, country, isDefault } = req.body;
-        console.log('Request body:', req.body); // Log the request body
 
         // Find the user by ID
         const userId = req.user.id; // Ensure you have the user's ID from the request
