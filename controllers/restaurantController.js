@@ -346,7 +346,33 @@ export const updateRestaurant = async (req, res) => {
     if (description) restaurant.description = description;
     if (location) restaurant.location = location;
 
-    // Update menu items (dynamically parse req.body keys)
+    // Loop over req.files to handle image uploads
+    for (const key of Object.keys(req.files)) {
+      const match = key.match(/^menuItems\[(\d+)\]\.(image1|image2)$/); // Match pattern for image1 or image2
+      if (match) {
+        const index = match[1]; // Extract index (e.g., 0, 1, 2)
+        const field = match[2]; // Extract image1 or image2
+
+        if (restaurant.menuItems[index]) {
+          const itemName = restaurant.menuItems[index].name;
+
+          // Upload the image
+          const imageFile = req.files[key]?.[0]; // Get the file from req.files
+          if (imageFile) {
+            try {
+              const uploadedImage = await cloudinaryInstance.uploader.upload(imageFile.path);
+              restaurant.menuItems[index][field] = uploadedImage.secure_url; // Update the URL in menu item
+            } catch (error) {
+              throw new Error(`${field} upload failed for ${itemName}`);
+            }
+          }
+        } else {
+          console.error(`Menu item at index ${index} does not exist`);
+        }
+      }
+    }
+
+    // Update other fields for menu items (dynamically parse req.body keys)
     for (const key of Object.keys(req.body)) {
       const match = key.match(/^menuItems\[(\d+)\]\.(.+)$/); // Match pattern menuItems[0].fieldName
       if (match) {
@@ -354,42 +380,12 @@ export const updateRestaurant = async (req, res) => {
         const field = match[2]; // Extract field name (e.g., category, price)
 
         // Only update if the item exists
-        if (restaurant.menuItems[index]) {
-          const itemName = restaurant.menuItems[index].name;
-          let itemImageFile1 = req.files[`menuItems[${index}].image1`]?.[0];
-          let itemImageFile2 = req.files[`menuItems[${index}].image2`]?.[0];
-
-          // Logic for updating images (image1, image2)
-          if (field === 'image1' || field === 'image2') {
-            // Upload the first image (image1)
-            if (field === 'image1' && itemImageFile1) {
-              try {
-                const uploadedImage1 = await cloudinaryInstance.uploader.upload(itemImageFile1.path);            
-                restaurant.menuItems[index].image1 = uploadedImage1.secure_url;
-              } catch (error) {
-                throw new Error(`Image1 upload failed for ${itemName}`);
-              }
-            }
-
-            // Upload the second image (image2)
-            if (field === 'image2' && itemImageFile2) {
-              try {
-                const uploadedImage2 = await cloudinaryInstance.uploader.upload(itemImageFile2.path);
-                restaurant.menuItems[index].image2 = uploadedImage2.secure_url;
-              } catch (error) {
-                throw new Error(`Image2 upload failed for ${itemName}`);
-              }
-            }
-          } else {
-            // Update other fields normally
-            restaurant.menuItems[index][field] = req.body[key];
-          }
-        } else {
-          console.error(`Menu item at index ${index} does not exist`);
+        if (restaurant.menuItems[index] && field !== 'image1' && field !== 'image2') {
+          restaurant.menuItems[index][field] = req.body[key];
         }
       }
     }
-    
+
     // Save the updated restaurant
     const updatedRestaurant = await restaurant.save();
 
