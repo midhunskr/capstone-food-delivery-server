@@ -39,7 +39,7 @@ export const updateCart = async (req, res) => {
         name: menuItem.name,
         veg: menuItem.veg,
         price: menuItem.price,
-        image: menuItem.image,
+        image: menuItem.image1,
         quantity: item.quantity,
         total: menuItem.price * item.quantity
       };

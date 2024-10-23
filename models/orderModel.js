@@ -64,6 +64,7 @@ const orderSchema = new mongoose.Schema({
   totalPrice: {
     type: Number,
   },
+  userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
   restaurant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Restaurant'

@@ -26,7 +26,7 @@ export const createPayment = async (req, res) => {
     // Save the order details to the database
     const newOrder = new Order({
       orderId: order.id,
-      userId: req.user.id, // Assuming user is authenticated and available in req.user
+      userId: req.user.id,// Assuming user is authenticated and available in req.user
       menuItems,
       restaurant: restaurantData,
       totalPrice,
@@ -37,6 +37,8 @@ export const createPayment = async (req, res) => {
     })
 
     await newOrder.save()
+    console.log(newOrder);
+    
 
     res.status(200).json({ orderId: order.id })
   } catch (error) {
@@ -45,36 +47,26 @@ export const createPayment = async (req, res) => {
   }
 }
 
+
 export const getUserOrders = async (req, res) => {
   try {
-    const userId = req.user.id //User ID from the authenticated request
-    // const userRole = req.user.role;
-    
-    // // Only allow users with role 'user' to fetch their own orders
-    // if (userRole !== 'user') {
-    //   return res.status(403).json({ message: "Access denied. Only regular users can view orders." });
-    // }
+    const fetchedUserId = req.user.id
 
-    // Extract page and limit from query parameters, with default values
-    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-    const limit = parseInt(req.query.limit) || 5; // Default to 10 orders per page if not provided
-
-    // Calculate the number of orders to skip
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
     // Fetch orders from the database where the user is the owner
-    const orders = await Order.find({ user: userId })
-      .populate('menuItems')  // Assuming menuItems is populated with references
+    const orders = await Order.find({ userId: fetchedUserId })
+      .populate('menuItems')
       .populate('restaurant')
-      .sort({ createdAt: -1 }) // Sort by most recent order first
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .exec();
-
     // Get the total number of orders for the user
-    const totalOrders = await Order.countDocuments({ user: userId });
+    const totalOrders = await Order.countDocuments({ userId: fetchedUserId });
 
-    // If no orders found
     if (!totalOrders || totalOrders.length === 0) {
       return res.status(404).json({ message: "No orders found for this user." });
     }
@@ -107,6 +99,8 @@ export const getUserOrders = async (req, res) => {
         paymentMethod: order.paymentMethod // If payment method (e.g., Razorpay) is saved
       }))
     });
+
+
   } catch (error) {
     console.error("Error fetching user orders:", error);
     res.status(500).json({ error: "Something went wrong" });
