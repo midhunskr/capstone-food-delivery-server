@@ -5,7 +5,7 @@ import { Restaurant } from '../models/restaurantModel.js';
 export const createPayment = async (req, res) => {
   try {
 
-    const { menuItems, totalPrice, deliveryFee, taxRate, grandTotal, restaurant } = req.body
+    const { menuItems, totalPrice, deliveryFee, taxRate, grandTotal, restaurant, customerName, customerAddress } = req.body
 
     const instance = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
@@ -26,19 +26,20 @@ export const createPayment = async (req, res) => {
     // Save the order details to the database
     const newOrder = new Order({
       orderId: order.id,
-      userId: req.user.id,// Assuming user is authenticated and available in req.user
+      userId: req.user.id,
       menuItems,
       restaurant: restaurantData,
       totalPrice,
       deliveryFee,
       grandTotal,
       taxRate,
+      customerName: customerName || req.user.name,
+      customerAddress,
       receipt: order.receipt,  
     })
 
     await newOrder.save()
     console.log(newOrder);
-    
 
     res.status(200).json({ orderId: order.id })
   } catch (error) {
@@ -46,7 +47,6 @@ export const createPayment = async (req, res) => {
     res.status(500).json({  error })
   }
 }
-
 
 export const getUserOrders = async (req, res) => {
   try {
@@ -65,7 +65,7 @@ export const getUserOrders = async (req, res) => {
       .limit(limit)
       .exec();
     // Get the total number of orders for the user
-    const totalOrders = await Order.countDocuments({ userId: fetchedUserId });
+    const totalOrders = await Order.countDocuments({ userId: fetchedUserId }); 
 
     if (!totalOrders || totalOrders.length === 0) {
       return res.status(404).json({ message: "No orders found for this user." });

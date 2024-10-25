@@ -28,7 +28,7 @@ export const registerUser = async (req, res) => {
         await newUser.save()    
 
         //tokenize user data
-        const token = generateUserToken(email)
+        const token = generateUserToken(newUser._id)
 
         //assign token to cookie
         res.cookie('token', token, {httpOnly: true})
@@ -196,6 +196,7 @@ export const checkUser = async (req, res, next) => {
         //Fetch verified user from 'authMiddleware/authUser'
         const user = req.user
         // const userName = userData.name
+        console.log(user);
         
         //Error handling
         if(!user) {
@@ -330,5 +331,63 @@ export const deleteAddress = async (req, res) => {
         res.status(200).json({ message: 'Address deleted' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting address', error });
+    }
+};
+
+//Submit rating
+export const submitRating = async (req, res) => {
+    try {
+        const { orderId, rating } = req.body; // Expecting orderId and rating from frontend
+        const userId = req.user.id; // Assuming you're using authentication and the user's ID is in req.user
+
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if the rating for the given order already exists in the user's ratings array
+        const existingRating = user.ratings.find(ratingObj => ratingObj.orderId.toString() === orderId);
+
+        if (existingRating) {
+            existingRating.rating = rating;
+            await user.save();
+            return res.status(200).json({ message: 'Rating updated successfully', rating: existingRating });
+        } else {
+            const newRating = { orderId, rating };
+            user.ratings.push(newRating);
+            await user.save();
+            return res.status(200).json({ message: 'Rating submitted successfully', rating: newRating });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error submitting rating', error });
+    }
+};
+
+//Fetch rating
+export const getRating = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const userId = req.user.id;
+
+        // Find the user by their ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Find the rating for the specific orderId in the user's ratings array
+        const rating = user.ratings.find(ratingObj => ratingObj.orderId.toString() === orderId);
+
+        if (!rating) {
+            return res.status(404).json({ message: 'Rating not found for this order' });
+        }
+
+        // Return the rating if found
+        res.status(200).json({ rating });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching rating', error });
     }
 };

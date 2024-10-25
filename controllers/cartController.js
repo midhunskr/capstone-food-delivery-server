@@ -5,7 +5,7 @@ import { Restaurant } from "../models/restaurantModel.js";
 export const updateCart = async (req, res) => {
   try {
     const { menuItems, restaurantId } = req.body;
-    const userId = req.user.id; 
+    const userId = req.user.id;
     
     // Check if the restaurant exists
     const restaurant = await Restaurant.findById(restaurantId);
@@ -84,7 +84,7 @@ export const updateCart = async (req, res) => {
 
 export const getCart = async (req, res) => {
   try {
-    const { restaurantId } = req.query; // Assuming restaurantId is passed as a query parameter
+    const { restaurantId } = req.query; // Assuming restaurantId is passed as a query parameter  
 
     if (!restaurantId) {
       return res.status(400).json({ success: false, message: "Restaurant ID is required." });
@@ -92,7 +92,6 @@ export const getCart = async (req, res) => {
 
     const cart = await Cart.findOne({ user: req.user.id, "restaurant.id": restaurantId })
       .populate("user", "name email")
-      // Add other populate options here as needed
       .populate("cartItems", "name price image");
 
     if (!cart) {

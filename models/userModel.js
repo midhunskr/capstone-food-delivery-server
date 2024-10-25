@@ -26,6 +26,25 @@ const addressSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
+// Rating Schema
+const ratingSchema = new mongoose.Schema({
+    orderId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order',
+        required: true,
+    },
+    rating: {
+        type: Number,
+        required: true,
+        min: 0.5,
+        max: 5,
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
 const userSchema = new mongoose.Schema({
     name: { type: String },
     email: { type: String, required: true, unique: true },
@@ -33,6 +52,7 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['user', 'delivery', 'admin'], default: 'user' },
     phone: { type: String },
     addresses: [addressSchema],
+    ratings: [ratingSchema],
 }, { timestamps: true }
 )
 

@@ -1,5 +1,5 @@
 import express from 'express'
-import { addAddress, checkUser, deleteAddress, deleteUser, getAllUsers, getUserAddresses, loginUser, logoutUser, registerUser, updateAddress, updateUser, userProfile } from '../../controllers/userController.js'
+import { addAddress, checkUser, deleteAddress, deleteUser, getAllUsers, getRating, getUserAddresses, loginUser, logoutUser, registerUser, submitRating, updateAddress, updateUser, userProfile } from '../../controllers/userController.js'
 import { admin, authUser } from '../../middlewares/authMiddleware.js'
 
 const router = express.Router()
@@ -23,4 +23,7 @@ router.get('/addresses', authUser, getUserAddresses);
 router.put('/address/:id', authUser, updateAddress);
 router.delete('/address/:id', authUser, deleteAddress);
 
+//Rating
+router.post('/submit-rating', authUser, submitRating)
+router.get('/ratings/:orderId', authUser, getRating)
 export default router
